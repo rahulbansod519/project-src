@@ -21,11 +21,11 @@ Create a digital human clone of yourself — capture your face and voice, then g
 ## Prerequisites
 
 - Node.js 24 + pnpm
-- Python 3.11 with virtualenv on SSD
+- Python 3.11 with virtualenv
 - ffmpeg — `brew install ffmpeg`
 - PostgreSQL (use [Neon](https://neon.tech) free tier)
-- SadTalker cloned to `/Volumes/RecordSSD/Avatar/SadTalker`
-- Python venv at `/Volumes/RecordSSD/Avatar/avatar-venv`
+- SadTalker cloned somewhere on your machine (set `SADTALKER_PATH` env var)
+- Python venv with all dependencies installed
 
 ## Setup
 
@@ -37,7 +37,7 @@ pnpm add -w lightningcss-darwin-arm64 @tailwindcss/oxide-darwin-arm64
 
 ### 2. Install Python dependencies
 ```bash
-/Volumes/RecordSSD/Avatar/avatar-venv/bin/pip install chatterbox-tts torchvision==0.21.0
+/path/to/your/venv/bin/pip install chatterbox-tts torchvision==0.21.0
 ```
 
 ### 3. Push database schema (one time)
@@ -57,7 +57,7 @@ cd artifacts/local-video-service
 # Dev mode (instant stub videos, no RAM needed)
 DEV_MODE=true bash start-service.sh
 
-# Production mode (real lip-sync, needs ~6GB free RAM)
+# (real lip-sync, needs ~6GB free RAM)
 bash start-service.sh
 ```
 
