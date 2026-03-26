@@ -1,0 +1,479 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: AI Avatar Creator API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: avatars
+    description: Avatar management
+  - name: videos
+    description: Video generation
+  - name: settings
+    description: API key settings
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /avatars:
+    get:
+      operationId: listAvatars
+      tags: [avatars]
+      summary: List all avatars
+      responses:
+        "200":
+          description: List of avatars
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Avatar"
+
+    post:
+      operationId: createAvatar
+      tags: [avatars]
+      summary: Create a new avatar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAvatarRequest"
+      responses:
+        "201":
+          description: Avatar created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avatar"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /avatars/{id}:
+    get:
+      operationId: getAvatar
+      tags: [avatars]
+      summary: Get avatar by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Avatar details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avatar"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteAvatar
+      tags: [avatars]
+      summary: Delete an avatar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Avatar deleted
+
+  /avatars/{id}/voice:
+    post:
+      operationId: uploadVoiceSample
+      tags: [avatars]
+      summary: Upload a voice sample to clone the voice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadVoiceRequest"
+      responses:
+        "200":
+          description: Voice cloning started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avatar"
+        "404":
+          description: Avatar not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /avatars/{id}/videos:
+    get:
+      operationId: listAvatarVideos
+      tags: [videos]
+      summary: List all videos for an avatar
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List all videos
+      responses:
+        "200":
+          description: List of all videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Video"
+
+    post:
+      operationId: generateVideo
+      tags: [videos]
+      summary: Generate a video for an avatar from a script
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateVideoRequest"
+      responses:
+        "202":
+          description: Video generation started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get video status and details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Video details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Video deleted
+
+  /settings/test:
+    post:
+      operationId: testApiKeys
+      tags: [settings]
+      summary: Test D-ID and ElevenLabs API key connectivity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestApiKeysRequest"
+      responses:
+        "200":
+          description: Test results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestApiKeysResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    AvatarPose:
+      type: string
+      enum: [bust, half-body, sitting, standing]
+
+    Avatar:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        thumbnailUrl:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        didAvatarId:
+          type: string
+          nullable: true
+        elevenlabsVoiceId:
+          type: string
+          nullable: true
+        hasVoice:
+          type: boolean
+        voiceStatus:
+          type: string
+          nullable: true
+          enum: [pending, ready, failed, null]
+        status:
+          type: string
+          enum: [creating, ready, failed]
+        pose:
+          $ref: "#/components/schemas/AvatarPose"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - hasVoice
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateAvatarRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        imageBase64:
+          type: string
+          description: Base64-encoded face image (JPEG or PNG)
+        imageUrl:
+          type: string
+          description: URL to face image (alternative to imageBase64)
+        pose:
+          $ref: "#/components/schemas/AvatarPose"
+          nullable: true
+      required:
+        - name
+
+    UploadVoiceRequest:
+      type: object
+      properties:
+        audioBase64:
+          type: string
+          description: Base64-encoded audio sample (WAV or MP3)
+        audioName:
+          type: string
+          description: Name for the voice clone
+      required:
+        - audioBase64
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+        avatarId:
+          type: string
+        script:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, ready, failed]
+        videoUrl:
+          type: string
+          nullable: true
+        thumbnailUrl:
+          type: string
+          nullable: true
+        duration:
+          type: number
+          nullable: true
+        language:
+          type: string
+        emotion:
+          type: string
+        backgroundUrl:
+          type: string
+          nullable: true
+        backgroundColorHex:
+          type: string
+          nullable: true
+          description: Solid background color as a hex string (e.g. #1a1a2e)
+        stitch:
+          type: boolean
+          description: Whether to show the full body (stitch mode) in the output video
+        errorMessage:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - avatarId
+        - script
+        - status
+        - language
+        - emotion
+        - stitch
+        - createdAt
+        - updatedAt
+
+    GenerateVideoRequest:
+      type: object
+      properties:
+        avatarId:
+          type: string
+        script:
+          type: string
+        language:
+          type: string
+          default: en
+        emotion:
+          type: string
+          default: neutral
+          enum: [neutral, happy, sad, excited, calm, confident, serious]
+        backgroundUrl:
+          type: string
+          nullable: true
+        backgroundColorHex:
+          type: string
+          nullable: true
+          description: Solid background color as a hex string (e.g. #1a1a2e)
+        stitch:
+          type: boolean
+          default: false
+          description: Show full body (stitch mode) in the output video
+      required:
+        - avatarId
+        - script
+
+    TestApiKeysRequest:
+      type: object
+      properties:
+        didApiKey:
+          type: string
+          nullable: true
+        elevenlabsApiKey:
+          type: string
+          nullable: true
+
+    TestApiKeysResponse:
+      type: object
+      properties:
+        did:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            message:
+              type: string
+          required:
+            - valid
+            - message
+        elevenlabs:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            message:
+              type: string
+          required:
+            - valid
+            - message
+      required:
+        - did
+        - elevenlabs
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+          nullable: true
+      required:
+        - error

@@ -1,0 +1,20 @@
+packages:
+  "framer-motion": "For fluid, stunning page transitions and micro-interactions"
+  "zustand": "For elegant global state management (API keys, wizard state)"
+  "clsx": "For conditional tailwind classes"
+  "tailwind-merge": "For merging tailwind classes safely"
+  "@hookform/resolvers": "For Zod form validation"
+  "react-hook-form": "For robust form state management"
+
+images:
+  - path: "artifacts/avatar-creator/public/images/mesh-bg.png"
+    description: "Dark, sleek, high-tech abstract gradient mesh background with deep indigo, purple, and black tones, suitable for a professional AI application"
+    aspect_ratio: "16:9"
+  - path: "artifacts/avatar-creator/public/images/avatar-placeholder.png"
+    description: "A stylized, futuristic wireframe or silhouette of a human head, glowing faintly in cyan or purple against a dark background, representing an AI digital clone"
+    aspect_ratio: "1:1"
+
+notes:
+  - Expects the provided API endpoints to be available. Will use generated hooks from @workspace/api-client-react.
+  - App relies on modern browser APIs (getUserMedia, MediaRecorder, AudioContext) for capture features.
+  - API keys are injected via request headers X-DID-Api-Key and X-ElevenLabs-Api-Key per instructions.
