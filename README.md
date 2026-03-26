@@ -21,11 +21,9 @@ Create a digital human clone of yourself — capture your face and voice, then g
 ## Prerequisites
 
 - Node.js 24 + pnpm
-- Python 3.11 with virtualenv
+- Python 3.11 — `brew install python@3.11`
 - ffmpeg — `brew install ffmpeg`
 - PostgreSQL (use [Neon](https://neon.tech) free tier)
-- SadTalker cloned somewhere on your machine (set `SADTALKER_PATH` env var)
-- Python venv with all dependencies installed
 
 ## Setup
 
@@ -35,10 +33,14 @@ pnpm install
 pnpm add -w lightningcss-darwin-arm64 @tailwindcss/oxide-darwin-arm64
 ```
 
-### 2. Install Python dependencies
+### 2. Install Python dependencies + SadTalker (one time, ~7 GB)
 ```bash
-/path/to/your/venv/bin/pip install chatterbox-tts torchvision==0.21.0
+# Installs venv + Chatterbox TTS + SadTalker + model checkpoints
+# Pass an install path as first argument (default: next to install.sh)
+bash artifacts/local-video-service/install.sh /path/to/install
 ```
+
+This sets up a Python venv, clones SadTalker, downloads all model weights, and writes a ready-to-use `start-service.sh`.
 
 ### 3. Push database schema (one time)
 ```bash
