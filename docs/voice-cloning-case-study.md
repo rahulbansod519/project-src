@@ -322,6 +322,49 @@ The most important variable in voice cloning quality is not parameter tuning —
 3. `exaggeration` tuning
 4. Fixed seed for multi-sentence consistency
 5. Sentence splitting strategy
+6. Correct TTS model routing in the generation pipeline
+
+---
+
+## Phase 4 — Production Bugs Found During Extended Testing
+
+### Bug 1: Video Generation Silently Using Wrong TTS Engine
+
+During a longer script test, audio previews sounded natural (Chatterbox) but generated videos sounded like Microsoft's edge-tts. The root cause was a condition check in the video generation path:
+
+```python
+# Bug: checked xtts_model instead of chatterbox_model
+if req.voice_sample_path and xtts_model is not None:
+    await run_tts_with_voice_clone(...)
+```
+
+When Chatterbox is loaded, `xtts_model` is `None` — so this condition was always `False`, silently falling back to edge-tts for every video. The preview audio endpoint had the correct check (`chatterbox_model is not None or xtts_model is not None`) but the video pipeline did not.
+
+**Fix:** Align the condition with the preview audio endpoint:
+
+```python
+if req.voice_sample_path and (chatterbox_model is not None or xtts_model is not None):
+    await run_tts_with_voice_clone(...)
+```
+
+**Lesson:** When a system has two codepaths (preview vs. full generation) that call the same underlying function, both must be kept in sync. Divergence is silent and can go undetected until a direct A/B comparison.
+
+---
+
+### Bug 2: Short Sentences Generating Inconsistently
+
+Very short sentences — "I was wrong.", "It understands.", "No API keys." — produced inconsistent voice quality. Each short sentence generated in isolation gave the model too little context to reproduce a stable speaker identity, even with a fixed seed.
+
+**Fix:** Raise the sentence merge threshold from 4 words to 8 words. Fragments below 8 words are merged with the following sentence before generation:
+
+```python
+# Before: merged fragments < 4 words → "I was wrong." generated alone
+# After:  merged fragments < 8 words → "I was wrong. The first time..." generated together
+if merged and len(merged[-1].split()) < 8:
+    merged[-1] = merged[-1] + " " + s
+```
+
+**Result:** Short emphatic sentences are no longer generated in isolation. Voice identity is stable across the full script including punchy single-clause sentences.
 
 ---
 
