@@ -107,8 +107,8 @@ export default function ScriptStudio() {
       toast({ title: "Script is empty", variant: "destructive" });
       return;
     }
-    if (script.length > 1000) {
-      toast({ title: "Script too long (max 1000 chars)", variant: "destructive" });
+    if (script.length > 3000) {
+      toast({ title: "Script too long (max 3000 chars)", variant: "destructive" });
       return;
     }
 
@@ -161,8 +161,8 @@ export default function ScriptStudio() {
               className="w-full h-64 bg-black/40 border border-white/10 rounded-xl p-5 text-white/90 text-lg leading-relaxed resize-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-white/20"
             />
             <div className="flex justify-end mt-2">
-              <span className={`text-xs ${script.length > 1000 ? "text-red-400" : "text-white/40"}`}>
-                {script.length} / 1000 chars
+              <span className={`text-xs ${script.length > 3000 ? "text-red-400" : "text-white/40"}`}>
+                {script.length} / 3000 chars
               </span>
             </div>
           </div>

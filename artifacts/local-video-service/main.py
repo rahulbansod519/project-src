@@ -265,7 +265,7 @@ async def run_generation(job_id: str, req: GenerateRequest) -> None:
         audio_dir.mkdir(parents=True, exist_ok=True)
         audio_path = audio_dir / f"{job_id}.wav"
 
-        if req.voice_sample_path and xtts_model is not None:
+        if req.voice_sample_path and (chatterbox_model is not None or xtts_model is not None):
             wav_sample_path = audio_dir / f"{job_id}_sample.wav"
             await convert_audio_to_wav(req.voice_sample_path, str(wav_sample_path))
             await run_tts_with_voice_clone(req.script, req.language, str(wav_sample_path), str(audio_path))
@@ -304,10 +304,10 @@ def _split_sentences(text: str) -> list[str]:
     """Split text into sentences for per-sentence TTS generation."""
     import re
     sentences = re.split(r'(?<=[.!?])\s+', text.strip())
-    # Merge very short fragments (< 4 words) with the next sentence
+    # Merge short fragments (< 8 words) with the next sentence for consistent voice
     merged = []
     for s in sentences:
-        if merged and len(merged[-1].split()) < 4:
+        if merged and len(merged[-1].split()) < 8:
             merged[-1] = merged[-1] + " " + s
         else:
             merged.append(s)
